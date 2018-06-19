@@ -35,9 +35,15 @@ String getStatus () {
   return retJson;
 }
 void handleGetLightStatus () {
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "*");
+  server.sendHeader("Access-Control-Allow-Headers", "*");
   server.send(200, "application/json", getStatus());
 }
 void handleToggleLED () {
   digitalWrite(pin_led, !digitalRead(pin_led));
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "*");
+  server.sendHeader("Access-Control-Allow-Headers", "*");
   server.send(200, "application/json", getStatus());
 }
