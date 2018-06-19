@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 
 ESP8266WebServer server;
-int pin_led = 1;
+int pin_led = 2;
 char* ssid = "";
 char* password = "";
 
@@ -39,5 +39,5 @@ void handleGetLightStatus () {
 }
 void handleToggleLED () {
   digitalWrite(pin_led, !digitalRead(pin_led));
-  handleGetLightStatus;
+  server.send(200, "application/json", getStatus());
 }
