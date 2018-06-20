@@ -1,6 +1,9 @@
 #include <ESP8266WebServer.h>
-#include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
+#include <WiFiUdp.h>
 
 ESP8266WebServer server;
 int pin_led = 2;
@@ -8,22 +11,23 @@ char* ssid = "";
 char* password = "";
 
 void setup () {
-  pinMode(pin_led, OUTPUT);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.begin(115200);
-  while (WiFi.status()!=WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    delay(5000);
+    ESP.restart();
   }
-  Serial.println("");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  ArduinoOTA.setHostname("ESP8266-00001");
+  ArduinoOTA.begin();
+
+  pinMode(pin_led, OUTPUT);
   server.on("/",[](){server.send(200,"text/plain","Hello World!");});
   server.on("/light/status", handleGetLightStatus);
   server.on("/light/toogle", handleToggleLED);
   server.begin();
 }
 void loop () {
+  ArduinoOTA.handle();
   server.handleClient();
 }
 String getStatus () {
