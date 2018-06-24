@@ -6,7 +6,8 @@
 #include <WiFiUdp.h>
 
 ESP8266WebServer server;
-int pin_led = 2;
+int white = 0;
+int yellow = 2;
 char* ssid = "";
 char* password = "";
 
@@ -20,9 +21,10 @@ void setup () {
   ArduinoOTA.setHostname("ESP8266-00001");
   ArduinoOTA.begin();
 
-  pinMode(pin_led, OUTPUT);
+  pinMode(white, OUTPUT);
+  pinMode(yellow, OUTPUT);
   server.on("/",[](){server.send(200,"text/plain","Hello World!");});
-  server.on("/light/status", handleGetLightStatus);
+  server.on("/light/status", getStatus);
   server.on("/light/toogle", handleToggleLED);
   server.begin();
 }
@@ -30,24 +32,25 @@ void loop () {
   ArduinoOTA.handle();
   server.handleClient();
 }
-String getStatus () {
+void getStatus () {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& light = jsonBuffer.createObject();
-  light["state"] = digitalRead(pin_led);
+  light["white"] = analogRead(white);
+  light["yellow"] = analogRead(yellow);
   String retJson;
   light.printTo(retJson);
-  return retJson;
-}
-void handleGetLightStatus () {
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Access-Control-Allow-Methods", "*");
   server.sendHeader("Access-Control-Allow-Headers", "*");
-  server.send(200, "application/json", getStatus());
+  server.send(200, "application/json", retJson);
 }
 void handleToggleLED () {
-  digitalWrite(pin_led, !digitalRead(pin_led));
-  server.sendHeader("Access-Control-Allow-Origin", "*");
-  server.sendHeader("Access-Control-Allow-Methods", "*");
-  server.sendHeader("Access-Control-Allow-Headers", "*");
-  server.send(200, "application/json", getStatus());
+  String data = server.arg("plain");
+  DynamicJsonBuffer jBuffer;
+  JsonObject& jObject = jBuffer.parseObject(data);
+  int whitePwm = jObject["white"];
+  int yellowPwm = jObject["yellow"];
+  analogWrite(white, whitePwm);
+  analogWrite(yellow, yellowPwm);
+  getStatus();
 }
