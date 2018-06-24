@@ -35,8 +35,8 @@ void loop () {
 void getStatus () {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& light = jsonBuffer.createObject();
-  light["white"] = analogRead(white);
-  light["yellow"] = analogRead(yellow);
+  light["white"] = digitalRead(white);
+  light["yellow"] = digitalRead(yellow);
   String retJson;
   light.printTo(retJson);
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -50,7 +50,7 @@ void handleToggleLED () {
   JsonObject& jObject = jBuffer.parseObject(data);
   int whitePwm = jObject["white"];
   int yellowPwm = jObject["yellow"];
-  analogWrite(white, whitePwm);
-  analogWrite(yellow, yellowPwm);
+  digitalWrite(white, whitePwm);
+  digitalWrite(yellow, yellowPwm);
   getStatus();
 }
